@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Newspaper, KeyRound, Moon, Sun, Sparkles, CheckCircle2, AlertCircle } from "lucide-react"
+import { Newspaper, KeyRound, Moon, Sun, Sparkles, CheckCircle2, AlertCircle, Database } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
@@ -9,6 +9,7 @@ interface HeaderProps {
   isMock: boolean
   hasCustomKey: boolean
   onOpenSettings: () => void
+  onOpenHistory: () => void
   totalBookmarks: number
   activeTab: "all" | "bookmarks"
   onTabChange: (tab: "all" | "bookmarks") => void
@@ -18,6 +19,7 @@ export function Header({
   isMock,
   hasCustomKey,
   onOpenSettings,
+  onOpenHistory,
   totalBookmarks,
   activeTab,
   onTabChange,
@@ -118,6 +120,17 @@ export function Header({
               </Badge>
             )}
           </button>
+
+          {/* DB History Modal Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onOpenHistory}
+            className="gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
+          >
+            <Database className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">DB 최근기록</span>
+          </Button>
 
           {/* Settings Modal Button */}
           <Button

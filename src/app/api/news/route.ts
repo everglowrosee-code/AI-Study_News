@@ -1,4 +1,20 @@
 import { NextRequest, NextResponse } from "next/server"
+import { getSupabase } from "@/lib/supabase"
+
+// Supabase 비동기 저장 헬퍼
+async function saveSearchToSupabase(keyword: string, total: number, items: unknown) {
+  try {
+    const supabase = getSupabase()
+    if (!supabase) return
+    await supabase.from("search_history").insert({
+      keyword,
+      total_count: total,
+      results: items,
+    })
+  } catch (err) {
+    console.warn("Supabase history insert warning:", err)
+  }
+}
 
 // 언론사 도메인 매핑 테이블
 const PRESS_DOMAINS: Record<string, string> = {
@@ -199,6 +215,9 @@ export async function GET(request: NextRequest) {
         press,
       }
     })
+
+    // Supabase에 검색 결과 비동기 저장 (결과 반환을 지연시키지 않음)
+    saveSearchToSupabase(query, data.total, refinedItems).catch(() => {})
 
     return NextResponse.json({
       lastBuildDate: data.lastBuildDate,

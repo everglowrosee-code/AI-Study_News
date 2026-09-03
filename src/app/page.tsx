@@ -6,6 +6,7 @@ import { SearchBar } from "@/components/news/SearchBar"
 import { MetricsOverview } from "@/components/news/MetricsOverview"
 import { NewsCard } from "@/components/news/NewsCard"
 import { SettingsModal } from "@/components/news/SettingsModal"
+import { RecentSearchesModal } from "@/components/news/RecentSearchesModal"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { NewsItem, NewsResponse, ApiCredentials } from "@/types/news"
@@ -29,6 +30,7 @@ export default function NewsDashboardPage() {
     clientSecret: "",
   })
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false)
+  const [isHistoryOpen, setIsHistoryOpen] = React.useState(false)
   const [bookmarks, setBookmarks] = React.useState<NewsItem[]>([])
 
   // 1. 초기 로컬 스토리지 데이터 불러오기
@@ -149,6 +151,7 @@ export default function NewsDashboardPage() {
         isMock={isMock}
         hasCustomKey={hasCustomKey}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenHistory={() => setIsHistoryOpen(true)}
         totalBookmarks={bookmarks.length}
         activeTab={activeTab}
         onTabChange={(tab) => {
@@ -352,6 +355,16 @@ export default function NewsDashboardPage() {
         initialClientId={credentials.clientId}
         initialClientSecret={credentials.clientSecret}
         isMock={isMock}
+      />
+
+      {/* Supabase Recent Searches Modal */}
+      <RecentSearchesModal
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        onSelectKeyword={(kw) => {
+          setQuery(kw)
+          setSelectedPressFilter(null)
+        }}
       />
     </div>
   )
