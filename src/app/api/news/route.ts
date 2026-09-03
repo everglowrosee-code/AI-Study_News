@@ -1,18 +1,69 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getSupabase } from "@/lib/supabase"
 
-// Supabase 비동기 저장 헬퍼
-async function saveSearchToSupabase(keyword: string, total: number, items: unknown) {
+// Supabase 비동기 저장 헬퍼 (네이버 공식 규격 1:N 정규화 저장)
+async function saveSearchToSupabase(
+  meta: {
+    keyword: string
+    total: number
+    start: number
+    display: number
+    lastBuildDate?: string
+  },
+  items: Array<{
+    title: string
+    cleanTitle: string
+    originallink: string
+    link: string
+    description: string
+    cleanDescription: string
+    pubDate: string
+    press: string
+  }>
+) {
   try {
     const supabase = getSupabase()
     if (!supabase) return
-    await supabase.from("search_history").insert({
-      keyword,
-      total_count: total,
-      results: items,
-    })
+
+    // 1. 부모 테이블 search_history 레코드 생성
+    const { data: searchRecord, error: searchError } = await supabase
+      .from("search_history")
+      .insert({
+        keyword: meta.keyword,
+        total: meta.total,
+        start_index: meta.start,
+        display: meta.display,
+        last_build_date: meta.lastBuildDate ? new Date(meta.lastBuildDate).toISOString() : null,
+      })
+      .select("id")
+      .single()
+
+    if (searchError || !searchRecord) {
+      console.warn("search_history insert error:", searchError)
+      return
+    }
+
+    // 2. 자식 테이블 news_items 개별 기사 일괄 저장 (items)
+    if (items && items.length > 0) {
+      const newsRows = items.map((item) => ({
+        search_id: searchRecord.id,
+        title: item.title,
+        clean_title: item.cleanTitle,
+        originallink: item.originallink,
+        link: item.link,
+        description: item.description,
+        clean_description: item.cleanDescription,
+        pub_date: item.pubDate ? new Date(item.pubDate).toISOString() : null,
+        press: item.press,
+      }))
+
+      const { error: itemsError } = await supabase.from("news_items").insert(newsRows)
+      if (itemsError) {
+        console.warn("news_items insert error:", itemsError)
+      }
+    }
   } catch (err) {
-    console.warn("Supabase history insert warning:", err)
+    console.warn("Supabase save error:", err)
   }
 }
 
@@ -216,8 +267,17 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Supabase에 검색 결과 비동기 저장 (결과 반환을 지연시키지 않음)
-    saveSearchToSupabase(query, data.total, refinedItems).catch(() => {})
+    // Supabase에 검색 결과 비동기 저장 (네이버 공식 규격 1:N 정규화 저장)
+    saveSearchToSupabase(
+      {
+        keyword: query,
+        total: data.total,
+        start: data.start,
+        display: data.display,
+        lastBuildDate: data.lastBuildDate,
+      },
+      refinedItems
+    ).catch(() => {})
 
     return NextResponse.json({
       lastBuildDate: data.lastBuildDate,
