@@ -24,10 +24,18 @@ CREATE TABLE IF NOT EXISTS news_items (
   link TEXT NOT NULL,                            -- 네이버 뉴스 URL (link)
   description TEXT,                              -- 기사 내용 요약 (네이버 원본, <b> 태그 포함)
   clean_description TEXT,                        -- HTML 태그가 정제된 순수 내용 요약
+  content TEXT,                                  -- 개별 기사 페이지에서 추출한 본문
+  content_crawled_at TIMESTAMPTZ,                -- 본문을 마지막으로 수집한 시각
+  article_content TEXT,                          -- 검색 결과 저장 직전 자동 수집한 기사 본문
   pub_date TIMESTAMPTZ,                          -- 기사 발행 일시 (pubDate, RFC 822 파싱)
   press TEXT DEFAULT '네이버뉴스',               -- URL 도메인 기반 언론사명 (예: 조선일보, 연합뉴스)
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL  -- 저장 일시
 );
+
+-- 기존 프로젝트에서 schema.sql을 다시 실행해도 본문 컬럼이 추가되도록 보장
+ALTER TABLE news_items ADD COLUMN IF NOT EXISTS content TEXT;
+ALTER TABLE news_items ADD COLUMN IF NOT EXISTS content_crawled_at TIMESTAMPTZ;
+ALTER TABLE news_items ADD COLUMN IF NOT EXISTS article_content TEXT;
 
 -- 3. 영구 저장 기사 테이블 (검색어가 삭제되어도 영구히 보존되는 독립 보관함)
 CREATE TABLE IF NOT EXISTS permanent_news (
@@ -94,6 +102,9 @@ SELECT
         'link', n.link,
         'description', n.description,
         'cleanDescription', n.clean_description,
+        'content', n.content,
+        'contentCrawledAt', n.content_crawled_at,
+        'articleContent', n.article_content,
         'pubDate', n.pub_date,
         'press', n.press
       ) ORDER BY n.created_at ASC

@@ -19,6 +19,9 @@ CREATE TABLE news_items (
   link TEXT NOT NULL,                            -- 네이버 뉴스 URL
   description TEXT,                              -- 기사 내용 요약
   clean_description TEXT,                        -- HTML 태그 정제 요약
+  content TEXT,                                  -- 개별 기사 페이지에서 추출한 본문
+  content_crawled_at TIMESTAMPTZ,                -- 본문을 마지막으로 수집한 시각
+  article_content TEXT,                          -- 검색 결과 저장 직전 자동 수집한 기사 본문
   pub_date TIMESTAMPTZ,                          -- 기사 발행 일시 (pubDate 파싱)
   press TEXT DEFAULT '네이버뉴스',               -- 언론사명 (예: 조선일보, 연합뉴스)
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL  -- 저장 일시
@@ -69,6 +72,9 @@ SELECT
         'link', n.link,
         'description', n.description,
         'cleanDescription', n.clean_description,
+        'content', n.content,
+        'contentCrawledAt', n.content_crawled_at,
+        'articleContent', n.article_content,
         'pubDate', n.pub_date,
         'press', n.press
       ) ORDER BY n.created_at ASC

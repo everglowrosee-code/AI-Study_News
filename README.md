@@ -58,3 +58,19 @@
    - **Key**: `NAVER_CLIENT_ID` / **Value**: 발급받은 네이버 Client ID
    - **Key**: `NAVER_CLIENT_SECRET` / **Value**: 발급받은 네이버 Client Secret
 3. **`Deploy`** 버튼을 클릭하면 실시간 네이버 뉴스 연동이 포함된 상태로 자동 배포됩니다.
+# 네이버 기사 본문 저장
+
+검색 결과의 개별 네이버 기사 본문을 Supabase에 저장하려면 먼저 Supabase SQL Editor에서
+`supabase/add_article_content.sql`을 한 번 실행합니다.
+
+그다음 저장된 기사의 `id`와 개별 기사 URL을 `/api/crawl`에 전달합니다.
+
+```bash
+curl -X POST http://localhost:3000/api/crawl \
+  -H "Content-Type: application/json" \
+  -d '{"newsItemId":"news_items UUID","naverLink":"https://n.news.naver.com/mnews/article/032/ARTICLE_ID"}'
+```
+
+`https://media.naver.com/press/032`는 경향신문 언론사 홈이므로 본문 수집 대상이 아닙니다.
+반드시 `/article/032/...` 형식의 개별 기사 주소를 사용해야 합니다. 성공하면 정제된 본문은
+`news_items.content`, 수집 시각은 `news_items.content_crawled_at`에 저장됩니다.

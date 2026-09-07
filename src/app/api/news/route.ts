@@ -19,7 +19,8 @@ async function saveSearchToSupabase(
     cleanDescription: string
     pubDate: string
     press: string
-  }>
+  }>,
+  apiOrigin: string
 ) {
   try {
     const supabase = getSupabase()
@@ -45,7 +46,36 @@ async function saveSearchToSupabase(
 
     // 2. 자식 테이블 news_items 개별 기사 일괄 저장 (items)
     if (items && items.length > 0) {
-      const newsRows = items.map((item) => ({
+      // 본문 크롤링은 기사별로 독립 처리한다. 한 건이 실패해도 null로 저장하고
+      // 다른 기사와 검색 메타데이터 저장은 계속 진행한다.
+      const articleContents: Array<string | null> = []
+      const concurrency = 5
+
+      for (let index = 0; index < items.length; index += concurrency) {
+        const batch = items.slice(index, index + concurrency)
+        const batchContents = await Promise.all(
+          batch.map(async (item) => {
+            if (!item.link.includes("n.news.naver.com")) return null
+            try {
+              const crawlResponse = await fetch(`${apiOrigin}/api/crawl`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ naverLink: item.link }),
+                cache: "no-store",
+                signal: AbortSignal.timeout(12_000),
+              })
+              const crawlData: { content?: unknown } = await crawlResponse.json()
+              return typeof crawlData.content === "string" ? crawlData.content : null
+            } catch (error) {
+              console.warn("Article crawl skipped:", item.link, error)
+              return null
+            }
+          })
+        )
+        articleContents.push(...batchContents)
+      }
+
+      const newsRows = items.map((item, index) => ({
         search_id: searchRecord.id,
         title: item.title,
         clean_title: item.cleanTitle,
@@ -53,6 +83,7 @@ async function saveSearchToSupabase(
         link: item.link,
         description: item.description,
         clean_description: item.cleanDescription,
+        article_content: articleContents[index],
         pub_date: item.pubDate ? new Date(item.pubDate).toISOString() : null,
         press: item.press,
       }))
@@ -221,7 +252,7 @@ export async function GET(request: NextRequest) {
   if (!clientId || !clientSecret) {
     const mockData = generateMockNews(query, display, sort)
     // Supabase가 연결되어 있으면 Mock 데이터도 DB에 자동 저장 지원
-    saveSearchToSupabase(
+    await saveSearchToSupabase(
       {
         keyword: query,
         total: mockData.total,
@@ -229,8 +260,9 @@ export async function GET(request: NextRequest) {
         display: mockData.display,
         lastBuildDate: mockData.lastBuildDate,
       },
-      mockData.items
-    ).catch(() => {})
+      mockData.items,
+      new URL(request.url).origin
+    )
     return NextResponse.json(mockData)
   }
 
@@ -279,7 +311,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Supabase에 검색 결과 비동기 저장 (네이버 공식 규격 1:N 정규화 저장)
-    saveSearchToSupabase(
+    await saveSearchToSupabase(
       {
         keyword: query,
         total: data.total,
@@ -287,8 +319,9 @@ export async function GET(request: NextRequest) {
         display: data.display,
         lastBuildDate: data.lastBuildDate,
       },
-      refinedItems
-    ).catch(() => {})
+      refinedItems,
+      new URL(request.url).origin
+    )
 
     return NextResponse.json({
       lastBuildDate: data.lastBuildDate,

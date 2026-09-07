@@ -1,10 +1,17 @@
 "use client"
 
 import * as React from "react"
-import { Trash2, ShieldCheck, ExternalLink, RefreshCw, Clock, Newspaper, SearchX, Check } from "lucide-react"
+import { Trash2, ShieldCheck, ExternalLink, RefreshCw, Clock, Newspaper, SearchX, BookOpen, Ban } from "lucide-react"
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 interface SavedNewsItem {
   id: string
@@ -16,6 +23,7 @@ interface SavedNewsItem {
   link: string
   description: string
   cleanDescription: string
+  articleContent: string | null
   pubDate: string
   press: string
   createdAt: string
@@ -52,6 +60,7 @@ export function SavedArticlesView() {
   const [isLoading, setIsLoading] = React.useState(true)
   const [deletingId, setDeletingId] = React.useState<string | null>(null)
   const [savingId, setSavingId] = React.useState<string | null>(null)
+  const [selectedArticle, setSelectedArticle] = React.useState<SavedNewsItem | null>(null)
 
   // 1. 저장된 기사 목록 로드
   const fetchItems = React.useCallback(async () => {
@@ -241,10 +250,22 @@ export function SavedArticlesView() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredItems.map((item) => {
             const isPermanent = permanentLinks.has(item.link)
+            const isCrawlable = (() => {
+              try {
+                return new URL(item.link).hostname === "n.news.naver.com"
+              } catch {
+                return false
+              }
+            })()
             return (
               <Card
                 key={item.id}
-                className="group flex flex-col justify-between overflow-hidden border border-border/80 bg-card transition-all hover:border-foreground/50 hover:shadow-md"
+                onClick={() => isCrawlable && setSelectedArticle(item)}
+                className={`group flex flex-col justify-between overflow-hidden border bg-card transition-all hover:shadow-md ${
+                  isCrawlable
+                    ? "cursor-pointer border-emerald-500/60 ring-1 ring-emerald-500/10 hover:border-emerald-500"
+                    : "cursor-default border-border/80 opacity-80"
+                }`}
               >
                 <CardHeader className="p-5 pb-3">
                   <div className="flex items-center justify-between gap-2">
@@ -255,6 +276,11 @@ export function SavedArticlesView() {
                       <Badge variant="outline" className="text-[10px] text-muted-foreground">
                         {item.keyword}
                       </Badge>
+                      {isCrawlable && (
+                        <Badge className="border-emerald-500/30 bg-emerald-500/10 text-[9px] font-bold text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-400">
+                          본문 가능
+                        </Badge>
+                      )}
                       {isPermanent && (
                         <Badge variant="luxury" className="gap-1">
                           <ShieldCheck className="h-2.5 w-2.5" />
@@ -269,14 +295,8 @@ export function SavedArticlesView() {
                   </div>
 
                   {/* Title */}
-                  <h3 className="mt-3 text-sm font-bold leading-snug tracking-tight text-foreground group-hover:underline transition-all line-clamp-2">
-                    <a
-                      href={item.link || item.originallink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {renderHighlighted(item.title)}
-                    </a>
+                  <h3 className="mt-3 line-clamp-2 text-sm font-bold leading-snug tracking-tight text-foreground transition-all group-hover:underline">
+                    {renderHighlighted(item.title)}
                   </h3>
                 </CardHeader>
 
@@ -286,7 +306,10 @@ export function SavedArticlesView() {
                   </p>
                 </CardContent>
 
-                <CardFooter className="flex items-center justify-between border-t border-border/80 bg-muted/20 p-3.5">
+                <CardFooter
+                  onClick={(event) => event.stopPropagation()}
+                  className="flex items-center justify-between border-t border-border/80 bg-muted/20 p-3.5"
+                >
                   <div className="flex items-center gap-1">
                     {/* 영구 보관 토글 버튼 */}
                     <Button
@@ -320,6 +343,22 @@ export function SavedArticlesView() {
 
                   <div className="flex items-center gap-1">
                     <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={!isCrawlable}
+                      onClick={() => isCrawlable && setSelectedArticle(item)}
+                      aria-label={`${item.cleanTitle} 본문 읽기`}
+                      title={isCrawlable ? "기사 본문 읽기" : "네이버 뉴스 링크가 아니어서 본문을 읽을 수 없습니다"}
+                      className={`h-7 gap-1 px-2 text-[11px] ${
+                        isCrawlable
+                          ? "text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-400"
+                          : "cursor-not-allowed text-muted-foreground line-through opacity-45"
+                      }`}
+                    >
+                      {isCrawlable ? <BookOpen className="h-3 w-3" /> : <Ban className="h-3 w-3" />}
+                      <span>본문 읽기</span>
+                    </Button>
+                    <Button
                       variant="outline"
                       size="sm"
                       asChild
@@ -341,6 +380,58 @@ export function SavedArticlesView() {
           })}
         </div>
       )}
+
+      <Dialog open={Boolean(selectedArticle)} onOpenChange={(open) => !open && setSelectedArticle(null)}>
+        <DialogContent className="max-h-[88vh] overflow-hidden border-zinc-300 bg-white text-zinc-950 shadow-2xl dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 sm:max-w-3xl">
+          {selectedArticle && (
+            <>
+              <DialogHeader className="border-b border-zinc-200 pb-4 pr-8 dark:border-zinc-800">
+                <div className="mb-1 flex flex-wrap items-center gap-2">
+                  <Badge variant="press">{selectedArticle.press}</Badge>
+                  <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                    {selectedArticle.keyword}
+                  </Badge>
+                </div>
+                <DialogTitle className="text-left text-2xl font-extrabold leading-snug text-zinc-950 dark:text-white">
+                  {selectedArticle.cleanTitle}
+                </DialogTitle>
+                <DialogDescription className="text-left text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                  {formatPubDate(selectedArticle.pubDate)} · 네이버 뉴스 본문
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="max-h-[58vh] overflow-y-auto rounded-xl bg-zinc-50 p-6 pr-4 dark:bg-zinc-900">
+                {selectedArticle.articleContent ? (
+                  <p className="mx-auto max-w-[68ch] whitespace-pre-line text-base font-medium leading-8 text-zinc-900 dark:text-zinc-100">
+                    {selectedArticle.articleContent}
+                  </p>
+                ) : (
+                  <div className="flex min-h-48 flex-col items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-white text-center dark:border-zinc-700 dark:bg-zinc-950">
+                    <Ban className="mb-3 h-6 w-6 text-muted-foreground" />
+                    <p className="text-sm font-bold">본문 없음</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      네이버 뉴스 링크지만 본문 크롤링에 실패했습니다.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                <Button variant="outline" size="sm" asChild className="gap-1.5 text-xs">
+                  <a
+                    href={selectedArticle.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    네이버 원문 열기
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
