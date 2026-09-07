@@ -80,14 +80,15 @@ export function PermanentNewsView() {
   return (
     <div className="space-y-6">
       {/* Header & Notice */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/60 pb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/80 pb-4">
         <div>
-          <h2 className="text-xl font-bold flex items-center gap-2 text-amber-900 dark:text-amber-300">
-            <ShieldCheck className="h-5 w-5 text-amber-500 fill-amber-500/20" />
-            <span>⭐ 영구 저장 기사 보관함</span>
+          <h2 className="text-xl font-bold flex items-center gap-2 text-foreground">
+            <ShieldCheck className="h-5 w-5 text-foreground" />
+            <span>영구 저장 기사 보관함</span>
+            <Badge variant="luxury">ARCHIVE</Badge>
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            검색 히스토리가 삭제되거나 10개 제한으로 밀려나더라도 <strong>절대 삭제되지 않고 영구히 보존</strong>되는 전용 보관함입니다.
+            검색 히스토리가 삭제되거나 10개 제한으로 밀려나더라도 <strong>절대 삭제되지 않고 영구히 보존</strong>되는 독립 보관함입니다.
           </p>
         </div>
 
@@ -97,22 +98,24 @@ export function PermanentNewsView() {
             size="sm"
             onClick={fetchItems}
             disabled={isLoading}
-            className="gap-1 text-xs"
+            className="gap-1.5 text-xs border-border/80 hover:border-foreground/40 hover:bg-muted"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
             <span>새로고침</span>
           </Button>
-          <span className="text-xs text-muted-foreground">
-            총 <strong>{items.length}</strong>건 영구 보존 중
+          <span className="text-xs text-muted-foreground font-mono">
+            총 <strong>{items.length}</strong>건 영구 보존
           </span>
         </div>
       </div>
 
       {/* Info Banner */}
-      <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3.5 text-xs text-muted-foreground flex items-center gap-2.5">
-        <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
-        <span>
-          이 보관함의 기사들은 독립된 <code>permanent_news</code> 테이블에 저장되어 있어, 검색어 삭제 시 연관 기사가 일괄 삭제되더라도 완벽하게 안전합니다.
+      <div className="rounded-xl border border-border/80 bg-card p-4 text-xs text-muted-foreground flex items-center gap-3 shadow-xs">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-foreground text-background">
+          <ShieldCheck className="h-3.5 w-3.5" />
+        </div>
+        <span className="leading-relaxed">
+          이 보관함의 기사들은 독립된 <code>permanent_news</code> 테이블에 저장되어 있어, 검색어 삭제 시 연관 기사가 일괄 삭제되더라도 완벽하게 안전하게 영구 유지됩니다.
         </span>
       </div>
 
@@ -128,7 +131,7 @@ export function PermanentNewsView() {
           </div>
           <h3 className="mt-3 text-sm font-semibold">영구 저장된 기사가 없습니다.</h3>
           <p className="mt-1 text-xs text-muted-foreground max-w-sm">
-            뉴스 피드 또는 [저장된 기사 리스트]에서 <strong>[영구보관]</strong> 버튼을 누르시면 이곳에 안전하게 평생 보존됩니다.
+            뉴스 피드 또는 [DB 저장 기사]에서 <strong>[영구보관]</strong> 버튼을 누르시면 이곳에 안전하게 보존됩니다.
           </p>
         </div>
       ) : (
@@ -136,20 +139,25 @@ export function PermanentNewsView() {
           {items.map((item) => (
             <Card
               key={item.id}
-              className="group flex flex-col justify-between overflow-hidden border-amber-500/30 bg-card hover:shadow-md transition-all"
+              className="group flex flex-col justify-between overflow-hidden border border-border/80 bg-card hover:border-foreground/50 hover:shadow-md transition-all"
             >
               <CardHeader className="p-5 pb-3">
                 <div className="flex items-center justify-between gap-2">
-                  <Badge variant="press" className="font-medium">
-                    {item.press}
-                  </Badge>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <Badge variant="press">
+                      {item.press}
+                    </Badge>
+                    <Badge variant="luxury">
+                      PERMANENT
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
                     <Clock className="h-3 w-3" />
                     <span>{formatPubDate(item.pubDate)}</span>
                   </div>
                 </div>
 
-                <h3 className="mt-3 text-sm font-semibold leading-snug tracking-tight group-hover:text-primary transition-colors line-clamp-2">
+                <h3 className="mt-3 text-sm font-bold leading-snug tracking-tight text-foreground group-hover:underline transition-all line-clamp-2">
                   <a
                     href={item.link || item.originallink}
                     target="_blank"
@@ -161,21 +169,21 @@ export function PermanentNewsView() {
               </CardHeader>
 
               <CardContent className="p-5 pt-0 flex-1">
-                <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                <p className="text-xs text-muted-foreground/90 line-clamp-3 leading-relaxed">
                   {renderHighlighted(item.description)}
                 </p>
               </CardContent>
 
-              <CardFooter className="flex items-center justify-between border-t border-border/40 bg-amber-500/5 p-3.5">
+              <CardFooter className="flex items-center justify-between border-t border-border/80 bg-muted/20 p-3.5">
                 <Button
                   variant="ghost"
                   size="sm"
                   disabled={deletingId === item.id}
                   onClick={() => handleDeletePermanent(item.id)}
-                  className="h-8 px-2 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer gap-1"
+                  className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer gap-1"
                   title="영구 보관함에서 삭제"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="h-3 w-3" />
                   <span>보관 해제</span>
                 </Button>
 
@@ -183,14 +191,14 @@ export function PermanentNewsView() {
                   variant="outline"
                   size="sm"
                   asChild
-                  className="h-7 px-2 rounded-md text-[11px] gap-1"
+                  className="h-7 px-2 rounded-md text-[11px] gap-1 border-border/80 hover:border-foreground/40 hover:bg-muted"
                 >
                   <a
                     href={item.link || item.originallink}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <span>원문보기</span>
+                    <span>원문</span>
                     <ExternalLink className="h-2.5 w-2.5" />
                   </a>
                 </Button>

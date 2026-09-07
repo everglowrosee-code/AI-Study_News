@@ -127,7 +127,7 @@ export function RecentSearchesModal({
           <DialogHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-foreground text-background">
                   <Database className="h-5 w-5" />
                 </div>
                 <DialogTitle className="text-xl">Supabase 검색 기록 (최근 10개)</DialogTitle>
@@ -150,9 +150,9 @@ export function RecentSearchesModal({
 
           {/* Not Configured Notice */}
           {!isConfigured && (
-            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs text-amber-900 dark:text-amber-300 space-y-2">
+            <div className="space-y-2 rounded-xl border border-border/80 bg-muted/50 p-3.5 text-xs text-foreground">
               <div className="flex items-center gap-1.5 font-semibold">
-                <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <AlertCircle className="h-4 w-4 text-foreground" />
                 <span>Supabase 환경변수가 필요합니다</span>
               </div>
               <p className="text-[11px] leading-relaxed text-muted-foreground">
@@ -177,7 +177,7 @@ export function RecentSearchesModal({
                 <div
                   key={item.id || index}
                   onClick={() => handleItemClick(item.keyword)}
-                  className="group flex items-center justify-between rounded-xl border border-border/60 bg-card p-3.5 transition-all hover:border-primary/50 hover:bg-accent/40 cursor-pointer"
+                  className="group flex cursor-pointer items-center justify-between rounded-xl border border-border/80 bg-card p-3.5 transition-all hover:border-foreground/40 hover:bg-muted/40"
                 >
                   <div className="flex items-center gap-3">
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-bold text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">

@@ -66,7 +66,7 @@ export function DeleteHistoryConfirmDialog({
         {/* Info Box */}
         <div className="rounded-xl border border-border/80 bg-muted/30 p-3.5 text-xs text-muted-foreground space-y-1.5">
           <div className="flex items-center gap-1.5 font-semibold text-foreground">
-            <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <ShieldCheck className="h-4 w-4 text-foreground" />
             <span>영구 저장 기사 보존 안내</span>
           </div>
           <p className="text-[11px] leading-relaxed">
@@ -99,10 +99,10 @@ export function DeleteHistoryConfirmDialog({
             type="button"
             disabled={isDeleting}
             onClick={() => handleAction(false)}
-            className="w-full text-left p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10 transition-colors cursor-pointer group disabled:opacity-50"
+            className="group w-full cursor-pointer rounded-xl border border-border/80 bg-card p-3.5 text-left transition-colors hover:border-foreground/40 hover:bg-muted/50 disabled:opacity-50"
           >
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+              <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
                 <ShieldCheck className="h-4 w-4" />
                 검색어만 삭제하고, 기사는 영구 보관함에 유지
               </span>

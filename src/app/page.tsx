@@ -201,7 +201,7 @@ export default function NewsDashboardPage() {
   const hasCustomKey = Boolean(credentials.clientId && credentials.clientSecret)
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20">
+    <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-foreground selection:text-background">
       {/* Top Header */}
       <Header
         isMock={isMock}
@@ -220,17 +220,17 @@ export default function NewsDashboardPage() {
       <main className="container mx-auto flex-1 max-w-7xl px-4 py-8 sm:px-8 space-y-8">
         {/* Demo Mode Notice Banner (if using mock) */}
         {isMock && (
-          <div className="relative overflow-hidden rounded-2xl border border-amber-500/20 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-transparent p-4 sm:p-5">
+          <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card p-4 shadow-xs sm:p-5">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-foreground text-background">
                   <Sparkles className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-300">
+                  <h4 className="text-sm font-bold text-foreground">
                     스마트 데모 모드로 작동 중입니다
                   </h4>
-                  <p className="text-xs text-amber-700/80 dark:text-amber-400/80 mt-0.5">
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     현재 실시간 네이버 API 키가 등록되지 않아 지능형 데모 뉴스를 보여주고 있습니다. 실시간 뉴스를 원하시면 API 키를 등록해 보세요.
                   </p>
                 </div>
@@ -239,7 +239,7 @@ export default function NewsDashboardPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsSettingsOpen(true)}
-                className="shrink-0 border-amber-500/30 text-amber-800 hover:bg-amber-500/10 dark:text-amber-300 gap-1 text-xs"
+                className="shrink-0 gap-1 border-border/80 text-xs text-foreground hover:border-foreground/40 hover:bg-muted"
               >
                 <KeyRound className="h-3.5 w-3.5" />
                 <span>네이버 API 키 등록하기</span>
@@ -299,7 +299,7 @@ export default function NewsDashboardPage() {
           <div className="flex items-center justify-between border-b border-border/60 pb-4">
             <div>
               <h2 className="text-xl font-bold flex items-center gap-2">
-                <Bookmark className="h-5 w-5 text-indigo-500 fill-indigo-500" />
+                <Bookmark className="h-5 w-5 fill-foreground text-foreground" />
                 <span>로컬 스크랩 보관함</span>
               </h2>
               <p className="text-xs text-muted-foreground mt-1">

@@ -162,14 +162,14 @@ export function SavedArticlesView() {
   return (
     <div className="space-y-6">
       {/* Header & Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/60 pb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/80 pb-4">
         <div>
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <Newspaper className="h-5 w-5 text-primary" />
-            <span>수파베이스 저장 기사 리스트</span>
+          <h2 className="text-xl font-bold flex items-center gap-2 text-foreground">
+            <Newspaper className="h-5 w-5 text-foreground" />
+            <span>DB 저장 기사 리스트</span>
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            검색 결과로 수파베이스 `news_items` 테이블에 저장된 전체 기사입니다. 개별 삭제 및 영구 저장이 가능합니다.
+            검색 결과로 Supabase <code>news_items</code> 테이블에 저장된 전체 기사입니다. 개별 삭제 및 영구 저장이 가능합니다.
           </p>
         </div>
 
@@ -179,12 +179,12 @@ export function SavedArticlesView() {
             size="sm"
             onClick={fetchItems}
             disabled={isLoading}
-            className="gap-1 text-xs"
+            className="gap-1.5 text-xs border-border/80 hover:border-foreground/40 hover:bg-muted"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
             <span>새로고침</span>
           </Button>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground font-mono">
             총 <strong>{filteredItems.length}</strong>건
           </span>
         </div>
@@ -193,25 +193,27 @@ export function SavedArticlesView() {
       {/* Keyword Filter Tabs */}
       {keywords.length > 0 && (
         <div className="flex items-center gap-1.5 overflow-x-auto py-1 text-xs">
-          <span className="text-muted-foreground shrink-0 font-medium">검색어 필터:</span>
+          <span className="text-muted-foreground shrink-0 font-semibold text-[10px] uppercase tracking-wider">
+            FILTER:
+          </span>
           <button
             onClick={() => setSelectedKeyword(null)}
-            className={`cursor-pointer rounded-md px-2.5 py-1 transition-all shrink-0 ${
+            className={`cursor-pointer rounded-lg px-2.5 py-1 transition-all shrink-0 ${
               selectedKeyword === null
-                ? "bg-foreground text-background font-semibold"
-                : "bg-muted text-muted-foreground hover:bg-accent"
+                ? "bg-foreground text-background font-bold shadow-xs"
+                : "border border-border/70 bg-card text-foreground/80 hover:border-foreground/30 hover:bg-muted"
             }`}
           >
-            전체 보기 ({items.length})
+            전체 ({items.length})
           </button>
           {keywords.map((kw) => (
             <button
               key={kw}
               onClick={() => setSelectedKeyword(selectedKeyword === kw ? null : kw)}
-              className={`cursor-pointer rounded-md px-2.5 py-1 transition-all shrink-0 ${
+              className={`cursor-pointer rounded-lg px-2.5 py-1 transition-all shrink-0 ${
                 selectedKeyword === kw
-                  ? "bg-primary text-primary-foreground font-semibold"
-                  : "bg-muted text-muted-foreground hover:bg-accent"
+                  ? "bg-foreground text-background font-bold shadow-xs"
+                  : "border border-border/70 bg-card text-foreground/80 hover:border-foreground/30 hover:bg-muted"
               }`}
             >
               {kw}
@@ -232,7 +234,7 @@ export function SavedArticlesView() {
           </div>
           <h3 className="mt-3 text-sm font-semibold">저장된 기사가 없습니다.</h3>
           <p className="mt-1 text-xs text-muted-foreground max-w-sm">
-            상단 [실시간 뉴스 검색] 탭에서 뉴스를 검색하시면 자동으로 수파베이스에 기사가 저장됩니다.
+            상단 [실시간 피드] 탭에서 뉴스를 검색하시면 자동으로 Supabase에 기사가 저장됩니다.
           </p>
         </div>
       ) : (
@@ -242,26 +244,32 @@ export function SavedArticlesView() {
             return (
               <Card
                 key={item.id}
-                className="group flex flex-col justify-between overflow-hidden border-border/60 transition-all hover:border-primary/40 hover:shadow-md"
+                className="group flex flex-col justify-between overflow-hidden border border-border/80 bg-card transition-all hover:border-foreground/50 hover:shadow-md"
               >
                 <CardHeader className="p-5 pb-3">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5">
-                      <Badge variant="press" className="font-medium">
+                      <Badge variant="press">
                         {item.press}
                       </Badge>
                       <Badge variant="outline" className="text-[10px] text-muted-foreground">
                         {item.keyword}
                       </Badge>
+                      {isPermanent && (
+                        <Badge variant="luxury" className="gap-1">
+                          <ShieldCheck className="h-2.5 w-2.5" />
+                          <span>ARCHIVE</span>
+                        </Badge>
+                      )}
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
                       <Clock className="h-3 w-3" />
                       <span>{formatPubDate(item.pubDate)}</span>
                     </div>
                   </div>
 
                   {/* Title */}
-                  <h3 className="mt-3 text-sm font-semibold leading-snug tracking-tight group-hover:text-primary transition-colors line-clamp-2">
+                  <h3 className="mt-3 text-sm font-bold leading-snug tracking-tight text-foreground group-hover:underline transition-all line-clamp-2">
                     <a
                       href={item.link || item.originallink}
                       target="_blank"
@@ -273,12 +281,12 @@ export function SavedArticlesView() {
                 </CardHeader>
 
                 <CardContent className="p-5 pt-0 flex-1">
-                  <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                  <p className="text-xs text-muted-foreground/90 line-clamp-3 leading-relaxed">
                     {renderHighlighted(item.description)}
                   </p>
                 </CardContent>
 
-                <CardFooter className="flex items-center justify-between border-t border-border/40 bg-muted/20 p-3.5">
+                <CardFooter className="flex items-center justify-between border-t border-border/80 bg-muted/20 p-3.5">
                   <div className="flex items-center gap-1">
                     {/* 영구 보관 토글 버튼 */}
                     <Button
@@ -286,15 +294,15 @@ export function SavedArticlesView() {
                       size="sm"
                       disabled={savingId === item.id}
                       onClick={() => handleTogglePermanent(item)}
-                      className={`h-8 px-2 text-xs rounded-md gap-1 transition-colors cursor-pointer ${
+                      className={`h-7 px-2 text-xs rounded-md gap-1 transition-colors cursor-pointer ${
                         isPermanent
-                          ? "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 font-semibold"
-                          : "text-muted-foreground hover:text-foreground"
+                          ? "bg-foreground text-background font-bold hover:bg-foreground/90"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
                       }`}
-                      title={isPermanent ? "영구 보관 해제" : "영구 저장소에 보관 (검색어 삭제 시에도 안전)"}
+                      title={isPermanent ? "영구 보관 해제" : "영구 저장소에 보관"}
                     >
-                      <ShieldCheck className={`h-3.5 w-3.5 ${isPermanent ? "text-amber-500" : ""}`} />
-                      <span>{isPermanent ? "영구보관됨" : "영구보관"}</span>
+                      <ShieldCheck className="h-3 w-3" />
+                      <span>{isPermanent ? "보존됨" : "영구보관"}</span>
                     </Button>
 
                     {/* 개별 기사 삭제 버튼 */}
@@ -303,7 +311,7 @@ export function SavedArticlesView() {
                       size="icon"
                       disabled={deletingId === item.id}
                       onClick={() => handleDeleteItem(item.id)}
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                      className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
                       title="이 기사 개별 삭제"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -315,7 +323,7 @@ export function SavedArticlesView() {
                       variant="outline"
                       size="sm"
                       asChild
-                      className="h-7 px-2 rounded-md text-[11px] gap-1"
+                      className="h-7 px-2 rounded-md text-[11px] gap-1 border-border/80 hover:border-foreground/40 hover:bg-muted"
                     >
                       <a
                         href={item.link || item.originallink}

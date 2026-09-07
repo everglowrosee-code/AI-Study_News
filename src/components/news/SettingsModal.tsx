@@ -62,7 +62,7 @@ export function SettingsModal({
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-foreground text-background">
               <KeyRound className="h-5 w-5" />
             </div>
             <DialogTitle className="text-xl">네이버 Open API 설정</DialogTitle>
@@ -75,7 +75,7 @@ export function SettingsModal({
         {/* Demo Mode Notice */}
         <div className="rounded-xl border border-border/80 bg-muted/40 p-3.5 text-xs text-muted-foreground space-y-1.5">
           <div className="flex items-center gap-1.5 font-medium text-foreground">
-            <Info className="h-4 w-4 text-primary" />
+            <Info className="h-4 w-4 text-foreground" />
             <span>키가 없으신가요?</span>
           </div>
           <p>
@@ -85,7 +85,7 @@ export function SettingsModal({
             href="https://developers.naver.com/apps/#/register"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-primary hover:underline font-medium pt-1"
+            className="inline-flex items-center gap-1 pt-1 font-medium text-foreground underline-offset-4 hover:underline"
           >
             <span>네이버 개발자 센터에서 키 무료 발급받기</span>
             <ExternalLink className="h-3 w-3" />
@@ -119,7 +119,7 @@ export function SettingsModal({
           </div>
 
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+            <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-foreground" />
             <span>키 정보는 브라우저 로컬 스토리지에만 안전하게 보관됩니다.</span>
           </div>
 

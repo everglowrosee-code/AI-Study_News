@@ -39,42 +39,46 @@ export function MetricsOverview({
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {/* 1. Total Hits */}
-      <Card className="relative overflow-hidden border-border/60 bg-gradient-to-br from-card to-primary/5 hover:shadow-md transition-shadow">
+      <Card className="border border-border/80 bg-card hover:border-foreground/40 transition-all shadow-xs hover:shadow-sm">
         <CardContent className="p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">총 검색 결과</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <BarChart3 className="h-4 w-4" />
+            <span className="text-[11px] font-bold tracking-wider uppercase text-muted-foreground">
+              TOTAL ARTICLES
+            </span>
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground text-background shadow-xs">
+              <BarChart3 className="h-3.5 w-3.5" />
             </div>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight">
+          <div className="mt-2.5 flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold tracking-tight font-sans text-foreground">
               {total.toLocaleString()}
             </span>
-            <span className="text-xs text-muted-foreground">건 발견</span>
+            <span className="text-xs text-muted-foreground font-medium">건</span>
           </div>
           <p className="mt-1 text-xs text-muted-foreground truncate">
-            키워드: <strong className="text-foreground">"{query}"</strong>
+            KEYWORD: <strong className="text-foreground">"{query}"</strong>
           </p>
         </CardContent>
       </Card>
 
       {/* 2. Top Press Filter */}
-      <Card className="border-border/60 bg-gradient-to-br from-card to-emerald-500/5 hover:shadow-md transition-shadow lg:col-span-2">
+      <Card className="border border-border/80 bg-card hover:border-foreground/40 transition-all shadow-xs hover:shadow-sm lg:col-span-2">
         <CardContent className="p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">상위 언론사 분포 (필터링 가능)</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              <Building2 className="h-4 w-4" />
+            <span className="text-[11px] font-bold tracking-wider uppercase text-muted-foreground">
+              PRESS DISTRIBUTION & FILTER
+            </span>
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-muted/40 text-foreground">
+              <Building2 className="h-3.5 w-3.5" />
             </div>
           </div>
           <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
             <button
               onClick={() => onSelectPressFilter(null)}
-              className={`cursor-pointer rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
+              className={`cursor-pointer rounded-lg px-2.5 py-1 text-xs font-medium transition-all ${
                 selectedPressFilter === null
-                  ? "bg-foreground text-background shadow-xs"
-                  : "bg-muted text-muted-foreground hover:bg-accent"
+                  ? "bg-foreground text-background font-bold shadow-xs"
+                  : "border border-border/70 bg-card text-foreground/80 hover:border-foreground/30 hover:bg-muted"
               }`}
             >
               전체 언론사
@@ -85,14 +89,18 @@ export function MetricsOverview({
                 <button
                   key={press}
                   onClick={() => onSelectPressFilter(isSelected ? null : press)}
-                  className={`cursor-pointer flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-all ${
+                  className={`cursor-pointer flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs transition-all ${
                     isSelected
-                      ? "bg-emerald-600 text-white font-semibold shadow-xs"
-                      : "bg-muted/80 text-foreground hover:bg-muted"
+                      ? "bg-foreground text-background font-bold shadow-xs"
+                      : "border border-border/70 bg-card text-foreground/80 hover:border-foreground/30 hover:bg-muted"
                   }`}
                 >
                   <span>{press}</span>
-                  <span className="rounded-full bg-black/10 dark:bg-white/10 px-1.5 py-0.2 text-[10px] font-bold">
+                  <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-mono ${
+                    isSelected
+                      ? "bg-background/20 text-background font-bold"
+                      : "bg-muted text-muted-foreground"
+                  }`}>
                     {count}
                   </span>
                 </button>
@@ -100,30 +108,32 @@ export function MetricsOverview({
             })}
           </div>
           {selectedPressFilter && (
-            <p className="mt-2 text-[11px] text-emerald-600 dark:text-emerald-400">
-              현재 <strong>{selectedPressFilter}</strong> 기사만 필터링되어 표시됩니다.
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              현재 <strong className="text-foreground">'{selectedPressFilter}'</strong> 기사만 필터링되어 표시됩니다.
             </p>
           )}
         </CardContent>
       </Card>
 
       {/* 3. Bookmarked Articles */}
-      <Card className="border-border/60 bg-gradient-to-br from-card to-indigo-500/5 hover:shadow-md transition-shadow">
+      <Card className="border border-border/80 bg-card hover:border-foreground/40 transition-all shadow-xs hover:shadow-sm">
         <CardContent className="p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">스크랩 보관함</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-              <Bookmark className="h-4 w-4" />
+            <span className="text-[11px] font-bold tracking-wider uppercase text-muted-foreground">
+              SAVED SCRAPS
+            </span>
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-muted/40 text-foreground">
+              <Bookmark className="h-3.5 w-3.5" />
             </div>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight">
+          <div className="mt-2.5 flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold tracking-tight font-sans text-foreground">
               {bookmarkCount}
             </span>
-            <span className="text-xs text-muted-foreground">건 저장됨</span>
+            <span className="text-xs text-muted-foreground font-medium">건 보관됨</span>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            {bookmarkCount > 0 ? "보관함 탭에서 확인 가능" : "관심 기사를 북마크해보세요"}
+            {bookmarkCount > 0 ? "스크랩 탭에서 열람 가능" : "기사를 북마크해보세요"}
           </p>
         </CardContent>
       </Card>

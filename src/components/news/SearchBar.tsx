@@ -88,21 +88,21 @@ export function SearchBar({
   return (
     <div className="w-full space-y-4">
       {/* Main Search Input Form */}
-      <form onSubmit={handleSubmit} className="relative flex w-full items-center gap-2">
+      <form onSubmit={handleSubmit} className="relative flex w-full items-center gap-2.5">
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="뉴스 키워드, 기업명, 인물, 정책을 검색해보세요..."
+            placeholder="검색어를 입력하세요 (예: 인공지능, 반도체, 빅테크, 스타트업...)"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            className="h-12 pl-11 pr-24 text-base shadow-xs transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 rounded-xl bg-card"
+            className="h-12 pl-11 pr-20 text-sm md:text-base rounded-xl border-border/80 bg-card shadow-xs transition-all focus:border-foreground focus:ring-1 focus:ring-foreground"
           />
           {inputValue && (
             <button
               type="button"
               onClick={() => setInputValue("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-md"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-md transition-colors"
             >
               지우기
             </button>
@@ -111,7 +111,7 @@ export function SearchBar({
         <Button
           type="submit"
           disabled={isLoading}
-          className="h-12 px-6 rounded-xl font-semibold gap-2 shadow-md"
+          className="h-12 px-6 rounded-xl font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 transition-all shadow-xs cursor-pointer shrink-0"
         >
           {isLoading ? (
             <RotateCcw className="h-4 w-4 animate-spin" />
@@ -126,19 +126,18 @@ export function SearchBar({
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between text-xs">
         {/* Trending Keywords */}
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="flex items-center gap-1 text-muted-foreground font-medium">
-            <TrendingUp className="h-3.5 w-3.5 text-primary" />
-            추천:
+          <span className="flex items-center gap-1 text-muted-foreground font-semibold tracking-wider uppercase text-[10px] mr-1">
+            TREND:
           </span>
           {SUGGESTED_KEYWORDS.map((kw) => (
             <button
               key={kw}
               type="button"
               onClick={() => handleKeywordClick(kw)}
-              className={`cursor-pointer rounded-full px-2.5 py-1 transition-all ${
+              className={`cursor-pointer rounded-lg px-2.5 py-1 text-xs transition-all ${
                 currentQuery === kw
-                  ? "bg-primary text-primary-foreground font-semibold shadow-xs"
-                  : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  ? "bg-foreground text-background font-bold shadow-xs"
+                  : "border border-border/70 bg-card text-foreground/80 hover:border-foreground/30 hover:bg-muted/60"
               }`}
             >
               {kw}
@@ -149,13 +148,15 @@ export function SearchBar({
         {/* Recent Searches */}
         {recentSearches.length > 0 && (
           <div className="flex items-center gap-1.5 overflow-x-auto py-1">
-            <span className="text-muted-foreground shrink-0">최근:</span>
+            <span className="text-muted-foreground shrink-0 font-semibold text-[10px] uppercase tracking-wider">
+              RECENT:
+            </span>
             {recentSearches.map((kw) => (
               <button
                 key={kw}
                 type="button"
                 onClick={() => handleKeywordClick(kw)}
-                className="cursor-pointer shrink-0 rounded-md bg-secondary/80 px-2 py-0.5 text-secondary-foreground hover:bg-secondary"
+                className="cursor-pointer shrink-0 rounded-md border border-border/60 bg-muted/30 px-2 py-0.5 text-xs text-foreground/90 hover:bg-muted hover:border-foreground/30 transition-all"
               >
                 {kw}
               </button>
@@ -163,7 +164,7 @@ export function SearchBar({
             <button
               type="button"
               onClick={handleClearRecents}
-              className="cursor-pointer text-[11px] text-muted-foreground hover:text-destructive shrink-0 underline ml-1"
+              className="cursor-pointer text-[11px] text-muted-foreground hover:text-foreground shrink-0 underline ml-1 transition-colors"
             >
               삭제
             </button>
@@ -172,16 +173,16 @@ export function SearchBar({
       </div>
 
       {/* Controls Bar: Sort, Display count, Grid/List view */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-y border-border/50 py-3 text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-y border-border/80 py-3 text-xs">
         {/* Sort & Count */}
         <div className="flex items-center gap-2 sm:gap-4">
-          <div className="flex items-center rounded-lg bg-muted p-0.5 text-xs font-medium">
+          <div className="flex items-center rounded-lg border border-border/70 bg-card p-0.5 font-medium shadow-xs">
             <button
               type="button"
               onClick={() => onSortChange("sim")}
               className={`cursor-pointer rounded-md px-3 py-1.5 transition-all ${
                 currentSort === "sim"
-                  ? "bg-background text-foreground shadow-xs font-semibold"
+                  ? "bg-foreground text-background shadow-xs font-bold"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -192,7 +193,7 @@ export function SearchBar({
               onClick={() => onSortChange("date")}
               className={`cursor-pointer rounded-md px-3 py-1.5 transition-all ${
                 currentSort === "date"
-                  ? "bg-background text-foreground shadow-xs font-semibold"
+                  ? "bg-foreground text-background shadow-xs font-bold"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -201,52 +202,52 @@ export function SearchBar({
           </div>
 
           {/* Display Count Select */}
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span>표시:</span>
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <span className="text-[11px] font-medium mr-0.5">표시:</span>
             {[10, 20, 50].map((num) => (
               <button
                 key={num}
                 type="button"
                 onClick={() => onDisplayChange(num)}
-                className={`cursor-pointer px-2 py-1 rounded transition-colors ${
+                className={`cursor-pointer px-2 py-1 rounded-md text-xs transition-colors ${
                   currentDisplay === num
-                    ? "bg-primary/10 text-primary font-bold"
-                    : "hover:bg-muted text-muted-foreground"
+                    ? "bg-foreground text-background font-bold"
+                    : "hover:bg-muted text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {num}개
+                {num}
               </button>
             ))}
           </div>
         </div>
 
         {/* View Mode Toggle */}
-        <div className="flex items-center gap-1 rounded-lg bg-muted p-0.5">
+        <div className="flex items-center gap-1 rounded-lg border border-border/70 bg-card p-0.5 shadow-xs">
           <button
             type="button"
             onClick={() => onViewModeChange("grid")}
             className={`cursor-pointer p-1.5 rounded-md transition-all ${
               viewMode === "grid"
-                ? "bg-background text-foreground shadow-xs"
+                ? "bg-foreground text-background shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
             }`}
             title="카드 그리드 뷰"
             aria-label="카드 그리드 뷰"
           >
-            <LayoutGrid className="h-4 w-4" />
+            <LayoutGrid className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
             onClick={() => onViewModeChange("list")}
             className={`cursor-pointer p-1.5 rounded-md transition-all ${
               viewMode === "list"
-                ? "bg-background text-foreground shadow-xs"
+                ? "bg-foreground text-background shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
             }`}
             title="리스트 뷰"
             aria-label="리스트 뷰"
           >
-            <List className="h-4 w-4" />
+            <List className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
