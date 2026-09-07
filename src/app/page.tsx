@@ -1,12 +1,14 @@
 "use client"
 
 import * as React from "react"
-import { Header } from "@/components/news/Header"
+import { Header, DashboardTab } from "@/components/news/Header"
 import { SearchBar } from "@/components/news/SearchBar"
 import { MetricsOverview } from "@/components/news/MetricsOverview"
 import { NewsCard } from "@/components/news/NewsCard"
 import { SettingsModal } from "@/components/news/SettingsModal"
 import { RecentSearchesModal } from "@/components/news/RecentSearchesModal"
+import { SavedArticlesView } from "@/components/news/SavedArticlesView"
+import { PermanentNewsView } from "@/components/news/PermanentNewsView"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { NewsItem, NewsResponse, ApiCredentials } from "@/types/news"
@@ -18,7 +20,7 @@ export default function NewsDashboardPage() {
   const [sort, setSort] = React.useState<"sim" | "date">("sim")
   const [display, setDisplay] = React.useState(20)
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid")
-  const [activeTab, setActiveTab] = React.useState<"all" | "bookmarks">("all")
+  const [activeTab, setActiveTab] = React.useState<DashboardTab>("all")
   const [selectedPressFilter, setSelectedPressFilter] = React.useState<string | null>(null)
 
   const [newsData, setNewsData] = React.useState<NewsResponse | null>(null)
@@ -200,32 +202,54 @@ export default function NewsDashboardPage() {
           </div>
         )}
 
-        {/* Search Bar (Feed Tab Only) */}
-        {activeTab === "all" ? (
-          <SearchBar
-            currentQuery={query}
-            currentSort={sort}
-            currentDisplay={display}
-            viewMode={viewMode}
-            onSearch={(q) => {
-              setQuery(q)
-              setSelectedPressFilter(null)
-            }}
-            onSortChange={setSort}
-            onDisplayChange={setDisplay}
-            onViewModeChange={setViewMode}
-            isLoading={isLoading}
-          />
-        ) : (
-          /* Bookmarks Header */
+        {/* Tab 1: DB 저장 기사 뷰 */}
+        {activeTab === "saved" && <SavedArticlesView />}
+
+        {/* Tab 2: 영구 보관함 뷰 */}
+        {activeTab === "permanent" && <PermanentNewsView />}
+
+        {/* Tab 3: 실시간 피드 (검색바 & 통계) */}
+        {activeTab === "all" && (
+          <>
+            <SearchBar
+              currentQuery={query}
+              currentSort={sort}
+              currentDisplay={display}
+              viewMode={viewMode}
+              onSearch={(q) => {
+                setQuery(q)
+                setSelectedPressFilter(null)
+              }}
+              onSortChange={setSort}
+              onDisplayChange={setDisplay}
+              onViewModeChange={setViewMode}
+              isLoading={isLoading}
+            />
+
+            {newsData && (
+              <MetricsOverview
+                total={newsData.total}
+                query={query}
+                items={newsData.items}
+                lastBuildDate={newsData.lastBuildDate}
+                bookmarkCount={bookmarks.length}
+                selectedPressFilter={selectedPressFilter}
+                onSelectPressFilter={setSelectedPressFilter}
+              />
+            )}
+          </>
+        )}
+
+        {/* Tab 4: 로컬 스크랩 보관함 헤더 */}
+        {activeTab === "bookmarks" && (
           <div className="flex items-center justify-between border-b border-border/60 pb-4">
             <div>
               <h2 className="text-xl font-bold flex items-center gap-2">
                 <Bookmark className="h-5 w-5 text-indigo-500 fill-indigo-500" />
-                <span>스크랩 보관함</span>
+                <span>로컬 스크랩 보관함</span>
               </h2>
               <p className="text-xs text-muted-foreground mt-1">
-                저장해 둔 뉴스 기사를 나중에 다시 읽거나 공유할 수 있습니다.
+                브라우저 로컬 스토리지에 저장해 둔 임시 스크랩 목록입니다.
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -236,26 +260,14 @@ export default function NewsDashboardPage() {
           </div>
         )}
 
-        {/* Metrics Overview (Feed Tab Only) */}
-        {activeTab === "all" && newsData && (
-          <MetricsOverview
-            total={newsData.total}
-            query={query}
-            items={newsData.items}
-            lastBuildDate={newsData.lastBuildDate}
-            bookmarkCount={bookmarks.length}
-            selectedPressFilter={selectedPressFilter}
-            onSelectPressFilter={setSelectedPressFilter}
-          />
-        )}
-
-        {/* News Feed Section */}
-        <section className="space-y-4">
-          {/* Loading Skeletons */}
-          {isLoading ? (
-            <div
-              className={
-                viewMode === "grid"
+        {/* News Feed Section (all 및 bookmarks 탭일 때만 렌더링) */}
+        {(activeTab === "all" || activeTab === "bookmarks") && (
+          <section className="space-y-4">
+            {/* Loading Skeletons */}
+            {isLoading ? (
+              <div
+                className={
+                  viewMode === "grid"
                   ? "grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
                   : "space-y-3"
               }
@@ -336,6 +348,7 @@ export default function NewsDashboardPage() {
             </div>
           )}
         </section>
+      )}
       </main>
 
       {/* Footer */}

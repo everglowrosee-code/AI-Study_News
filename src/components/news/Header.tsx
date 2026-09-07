@@ -5,14 +5,16 @@ import { Newspaper, KeyRound, Moon, Sun, Sparkles, CheckCircle2, AlertCircle, Da
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
+export type DashboardTab = "all" | "saved" | "permanent" | "bookmarks"
+
 interface HeaderProps {
   isMock: boolean
   hasCustomKey: boolean
   onOpenSettings: () => void
   onOpenHistory: () => void
   totalBookmarks: number
-  activeTab: "all" | "bookmarks"
-  onTabChange: (tab: "all" | "bookmarks") => void
+  activeTab: DashboardTab
+  onTabChange: (tab: DashboardTab) => void
 }
 
 export function Header({
@@ -64,34 +66,54 @@ export function Header({
               </span>
             </div>
             <p className="hidden text-[11px] text-muted-foreground sm:block">
-              네이버 실시간 뉴스 검색 & 인사이트 모니터링
+              네이버 실시간 뉴스 검색 & 수파베이스 저장소
             </p>
           </div>
         </div>
 
         {/* Center / Navigation Tabs */}
-        <div className="flex items-center gap-1 rounded-lg bg-muted/60 p-1 text-sm">
+        <div className="flex items-center gap-1 rounded-lg bg-muted/60 p-1 text-xs sm:text-sm overflow-x-auto">
           <button
             onClick={() => onTabChange("all")}
-            className={`cursor-pointer rounded-md px-3 py-1.5 font-medium transition-all ${
+            className={`cursor-pointer rounded-md px-2.5 py-1.5 font-medium transition-all shrink-0 ${
               activeTab === "all"
-                ? "bg-background text-foreground shadow-xs"
+                ? "bg-background text-foreground shadow-xs font-semibold"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            실시간 뉴스 피드
+            실시간 피드
+          </button>
+          <button
+            onClick={() => onTabChange("saved")}
+            className={`cursor-pointer rounded-md px-2.5 py-1.5 font-medium transition-all shrink-0 ${
+              activeTab === "saved"
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            DB 저장 기사
+          </button>
+          <button
+            onClick={() => onTabChange("permanent")}
+            className={`cursor-pointer flex items-center gap-1 rounded-md px-2.5 py-1.5 font-medium transition-all shrink-0 ${
+              activeTab === "permanent"
+                ? "bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <span>⭐ 영구 보관함</span>
           </button>
           <button
             onClick={() => onTabChange("bookmarks")}
-            className={`cursor-pointer flex items-center gap-1.5 rounded-md px-3 py-1.5 font-medium transition-all ${
+            className={`cursor-pointer hidden md:flex items-center gap-1 rounded-md px-2.5 py-1.5 font-medium transition-all shrink-0 ${
               activeTab === "bookmarks"
-                ? "bg-background text-foreground shadow-xs"
+                ? "bg-background text-foreground shadow-xs font-semibold"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            <span>스크랩 보관함</span>
+            <span>스크랩</span>
             {totalBookmarks > 0 && (
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
                 {totalBookmarks}
               </span>
             )}

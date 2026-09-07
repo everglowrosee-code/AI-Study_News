@@ -1,14 +1,10 @@
 -- ====================================================================
 -- news-capt: 네이버 뉴스 검색 결과 정규화 스키마 (네이버 공식 API 규격 1:1 매핑)
+-- + 영구 보관용 permanent_news 테이블
 -- ====================================================================
 
--- 기존 테이블 및 뷰 정리 (필요시)
-DROP VIEW IF EXISTS v_search_history;
-DROP TABLE IF EXISTS news_items CASCADE;
-DROP TABLE IF EXISTS search_history CASCADE;
-
 -- 1. 검색 마스터 테이블 (네이버 API Root 응답 매핑)
-CREATE TABLE search_history (
+CREATE TABLE IF NOT EXISTS search_history (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   keyword TEXT NOT NULL,                         -- 검색 키워드 (query)
   total INTEGER DEFAULT 0 NOT NULL,              -- 전체 검색 결과 개수 (total)
@@ -19,7 +15,7 @@ CREATE TABLE search_history (
 );
 
 -- 2. 뉴스 개별 기사 테이블 (네이버 API items 배열 1:1 필드 매핑)
-CREATE TABLE news_items (
+CREATE TABLE IF NOT EXISTS news_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   search_id UUID NOT NULL REFERENCES search_history(id) ON DELETE CASCADE, -- 부모 검색 외래키
   title TEXT NOT NULL,                           -- 기사 제목 (네이버 원본, <b> 태그 포함)
@@ -33,14 +29,31 @@ CREATE TABLE news_items (
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL  -- 저장 일시
 );
 
--- 3. 고성능 조회를 위한 인덱스 생성
-CREATE INDEX idx_search_history_created_at ON search_history (created_at DESC);
-CREATE INDEX idx_news_items_search_id ON news_items (search_id);
-CREATE INDEX idx_news_items_press ON news_items (press);
-CREATE INDEX idx_news_items_pub_date ON news_items (pub_date DESC);
+-- 3. 영구 저장 기사 테이블 (검색어가 삭제되어도 영구히 보존되는 독립 보관함)
+CREATE TABLE IF NOT EXISTS permanent_news (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  original_news_id UUID,                         -- 기존 news_items의 id (선택 참조)
+  title TEXT NOT NULL,                           -- 기사 제목 (네이버 원본)
+  clean_title TEXT NOT NULL,                     -- HTML 태그 정제 제목
+  originallink TEXT,                             -- 언론사 원문 URL
+  link TEXT NOT NULL,                            -- 네이버 뉴스 URL
+  description TEXT,                              -- 기사 내용 요약
+  clean_description TEXT,                        -- HTML 태그 정제 요약
+  pub_date TIMESTAMPTZ,                          -- 기사 발행 일시
+  press TEXT DEFAULT '네이버뉴스',               -- 언론사명
+  saved_at TIMESTAMPTZ DEFAULT now() NOT NULL    -- 영구 저장 일시
+);
 
--- 4. 최근 10개 검색만 유지하는 자동 정리 트리거 함수
--- (search_history에서 10개 초과 삭제 시, ON DELETE CASCADE로 news_items도 자동 삭제됨)
+-- 4. 고성능 조회를 위한 인덱스 생성
+CREATE INDEX IF NOT EXISTS idx_search_history_created_at ON search_history (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_news_items_search_id ON news_items (search_id);
+CREATE INDEX IF NOT EXISTS idx_news_items_press ON news_items (press);
+CREATE INDEX IF NOT EXISTS idx_news_items_pub_date ON news_items (pub_date DESC);
+CREATE INDEX IF NOT EXISTS idx_permanent_news_saved_at ON permanent_news (saved_at DESC);
+CREATE INDEX IF NOT EXISTS idx_permanent_news_link ON permanent_news (link);
+
+-- 5. 최근 10개 검색만 유지하는 자동 정리 트리거 함수
+-- (search_history에서 10개 초과 삭제 시, ON DELETE CASCADE로 news_items도 자동 삭제됨. permanent_news는 보존됨)
 CREATE OR REPLACE FUNCTION clean_old_search_history()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -54,13 +67,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 5. 트리거 등록
+-- 6. 트리거 등록
+DROP TRIGGER IF EXISTS trg_clean_old_search_history ON search_history;
 CREATE TRIGGER trg_clean_old_search_history
 AFTER INSERT ON search_history
 FOR EACH STATEMENT
 EXECUTE FUNCTION clean_old_search_history();
 
--- 6. 조회 편의를 위한 뷰 (View) 생성: 검색 정보 + 뉴스 items JSON 배열 결합
+-- 7. 조회 편의를 위한 뷰 (View) 생성
 CREATE OR REPLACE VIEW v_search_history AS
 SELECT 
   s.id,
@@ -90,12 +104,19 @@ FROM search_history s
 LEFT JOIN news_items n ON s.id = n.search_id
 GROUP BY s.id;
 
--- 7. Row Level Security (RLS) 보안 정책
+-- 8. Row Level Security (RLS) 보안 정책 (SELECT, INSERT, UPDATE, DELETE 전체 허용)
 ALTER TABLE search_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE news_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE permanent_news ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow public read and insert search_history" 
+DROP POLICY IF EXISTS "Allow public all on search_history" ON search_history;
+CREATE POLICY "Allow public all on search_history" 
 ON search_history FOR ALL USING (true) WITH CHECK (true);
 
-CREATE POLICY "Allow public read and insert news_items" 
+DROP POLICY IF EXISTS "Allow public all on news_items" ON news_items;
+CREATE POLICY "Allow public all on news_items" 
 ON news_items FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all on permanent_news" ON permanent_news;
+CREATE POLICY "Allow public all on permanent_news" 
+ON permanent_news FOR ALL USING (true) WITH CHECK (true);
