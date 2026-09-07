@@ -23,6 +23,15 @@ export async function GET() {
       .order("saved_at", { ascending: false })
 
     if (error) {
+      // 테이블이 아직 DB에 생성되지 않은 경우 (PGRST205)
+      if (error.code === "PGRST205") {
+        return NextResponse.json({
+          isConfigured: true,
+          items: [],
+          tablePending: true,
+          message: "permanent_news 테이블이 아직 생성되지 않았습니다. supabase/schema.sql을 실행해 주세요.",
+        })
+      }
       console.error("Fetch permanent news error:", error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }

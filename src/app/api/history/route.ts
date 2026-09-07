@@ -45,6 +45,14 @@ export async function GET() {
       .limit(10)
 
     if (error) {
+      if (error.code === "PGRST205") {
+        return NextResponse.json({
+          isConfigured: true,
+          history: [],
+          tablePending: true,
+          message: "search_history 테이블이 아직 생성되지 않았습니다.",
+        })
+      }
       console.error("Supabase fetch error:", error)
       return NextResponse.json(
         { isConfigured: true, history: [], error: error.message },

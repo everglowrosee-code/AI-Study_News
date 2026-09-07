@@ -49,6 +49,15 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query
 
     if (error) {
+      if (error.code === "PGRST205") {
+        return NextResponse.json({
+          isConfigured: true,
+          items: [],
+          count: 0,
+          tablePending: true,
+          message: "news_items 테이블이 아직 생성되지 않았습니다.",
+        })
+      }
       console.error("Fetch news items error:", error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }

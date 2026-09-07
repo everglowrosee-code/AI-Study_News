@@ -34,8 +34,22 @@ export default function NewsDashboardPage() {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false)
   const [isHistoryOpen, setIsHistoryOpen] = React.useState(false)
   const [bookmarks, setBookmarks] = React.useState<NewsItem[]>([])
+  const [permanentLinks, setPermanentLinks] = React.useState<Set<string>>(new Set())
 
-  // 1. 초기 로컬 스토리지 데이터 불러오기
+  // 영구 저장 링크 로드
+  const fetchPermanentLinks = React.useCallback(async () => {
+    try {
+      const res = await fetch("/api/permanent-news")
+      const data = await res.json()
+      if (data.items) {
+        setPermanentLinks(new Set(data.items.map((i: any) => i.link)))
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  // 1. 초기 데이터 불러오기
   React.useEffect(() => {
     try {
       const savedKeys = localStorage.getItem("news_capt_api_keys")
@@ -49,7 +63,47 @@ export default function NewsDashboardPage() {
     } catch {
       // ignore
     }
-  }, [])
+    fetchPermanentLinks()
+  }, [fetchPermanentLinks])
+
+  // 영구 보관 토글 핸들러
+  const handleTogglePermanent = async (item: NewsItem) => {
+    const isAlready = permanentLinks.has(item.link)
+    try {
+      if (isAlready) {
+        const res = await fetch(`/api/permanent-news?link=${encodeURIComponent(item.link)}`, {
+          method: "DELETE",
+        })
+        if (res.ok) {
+          setPermanentLinks((prev) => {
+            const next = new Set(prev)
+            next.delete(item.link)
+            return next
+          })
+        }
+      } else {
+        const res = await fetch("/api/permanent-news", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: item.title,
+            cleanTitle: item.cleanTitle,
+            originallink: item.originallink,
+            link: item.link,
+            description: item.description,
+            cleanDescription: item.cleanDescription,
+            pubDate: item.pubDate,
+            press: item.press,
+          }),
+        })
+        if (res.ok) {
+          setPermanentLinks((prev) => new Set(prev).add(item.link))
+        }
+      }
+    } catch (err) {
+      console.error("Permanent toggle error:", err)
+    }
+  }
 
   // 2. 뉴스 검색 API 호출
   const fetchNews = React.useCallback(
@@ -335,12 +389,15 @@ export default function NewsDashboardPage() {
                     (b.link && b.link === item.link) ||
                     (b.originallink && b.originallink === item.originallink)
                 )
+                const isPermanent = permanentLinks.has(item.link)
                 return (
                   <NewsCard
                     key={`${item.link}-${index}`}
                     item={item}
                     isBookmarked={isBookmarked}
                     onToggleBookmark={handleToggleBookmark}
+                    isPermanent={isPermanent}
+                    onTogglePermanent={handleTogglePermanent}
                     viewMode={viewMode}
                   />
                 )

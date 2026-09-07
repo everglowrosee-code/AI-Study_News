@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ExternalLink, Bookmark, Share2, Check, Clock, Newspaper } from "lucide-react"
+import { ExternalLink, Bookmark, Share2, Check, Clock, Newspaper, ShieldCheck } from "lucide-react"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,8 @@ interface NewsCardProps {
   item: NewsItem
   isBookmarked: boolean
   onToggleBookmark: (item: NewsItem) => void
+  isPermanent?: boolean
+  onTogglePermanent?: (item: NewsItem) => void
   viewMode: "grid" | "list"
 }
 
@@ -43,6 +45,8 @@ export function NewsCard({
   item,
   isBookmarked,
   onToggleBookmark,
+  isPermanent = false,
+  onTogglePermanent,
   viewMode,
 }: NewsCardProps) {
   const [copied, setCopied] = React.useState(false)
@@ -78,6 +82,12 @@ export function NewsCard({
               <Clock className="h-3 w-3" />
               {formatPubDate(item.pubDate)}
             </span>
+            {isPermanent && (
+              <Badge variant="outline" className="border-amber-500/40 text-amber-700 dark:text-amber-300 text-[10px] gap-1 bg-amber-50 dark:bg-amber-950/40">
+                <ShieldCheck className="h-3 w-3 text-amber-500" />
+                <span>영구보존됨</span>
+              </Badge>
+            )}
           </div>
 
           {/* Title */}
@@ -100,13 +110,29 @@ export function NewsCard({
 
         {/* Actions */}
         <div className="flex sm:flex-col items-center gap-1.5 shrink-0 self-end sm:self-center">
+          {onTogglePermanent && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onTogglePermanent(item)}
+              className={`h-9 w-9 rounded-lg transition-colors cursor-pointer ${
+                isPermanent
+                  ? "text-amber-500 bg-amber-50 dark:bg-amber-950/40 hover:text-amber-600"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              title={isPermanent ? "영구 보관 해제" : "⭐ 영구 저장소에 보관 (검색어 삭제 시에도 안전)"}
+            >
+              <ShieldCheck className={`h-4 w-4 ${isPermanent ? "text-amber-500" : ""}`} />
+            </Button>
+          )}
+
           <Button
             variant="ghost"
             size="icon"
             onClick={() => onToggleBookmark(item)}
             className={`h-9 w-9 rounded-lg transition-colors cursor-pointer ${
               isBookmarked
-                ? "text-amber-500 bg-amber-50 dark:bg-amber-950/40 hover:text-amber-600"
+                ? "text-blue-500 bg-blue-50 dark:bg-blue-950/40 hover:text-blue-600"
                 : "text-muted-foreground hover:text-foreground"
             }`}
             title={isBookmarked ? "스크랩 취소" : "스크랩 보관"}
@@ -155,9 +181,17 @@ export function NewsCard({
     <Card className="group flex flex-col justify-between overflow-hidden border-border/60 transition-all hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5">
       <CardHeader className="p-5 pb-3">
         <div className="flex items-center justify-between gap-2">
-          <Badge variant="press" className="font-medium">
-            {item.press}
-          </Badge>
+          <div className="flex items-center gap-1.5">
+            <Badge variant="press" className="font-medium">
+              {item.press}
+            </Badge>
+            {isPermanent && (
+              <Badge variant="outline" className="border-amber-500/40 text-amber-700 dark:text-amber-300 text-[10px] gap-1 bg-amber-50 dark:bg-amber-950/40">
+                <ShieldCheck className="h-3 w-3 text-amber-500" />
+                <span>영구보존</span>
+              </Badge>
+            )}
+          </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Clock className="h-3 w-3" />
             <span>{formatPubDate(item.pubDate)}</span>
@@ -184,13 +218,29 @@ export function NewsCard({
 
       <CardFooter className="flex items-center justify-between border-t border-border/40 bg-muted/20 p-4">
         <div className="flex items-center gap-1">
+          {onTogglePermanent && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onTogglePermanent(item)}
+              className={`h-8 w-8 rounded-md transition-colors cursor-pointer ${
+                isPermanent
+                  ? "text-amber-500 bg-amber-50 dark:bg-amber-950/40 hover:text-amber-600"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              title={isPermanent ? "영구 보관 해제" : "⭐ 영구 저장소에 보관 (검색어 삭제 시에도 안전)"}
+            >
+              <ShieldCheck className={`h-4 w-4 ${isPermanent ? "text-amber-500" : ""}`} />
+            </Button>
+          )}
+
           <Button
             variant="ghost"
             size="icon"
             onClick={() => onToggleBookmark(item)}
             className={`h-8 w-8 rounded-md transition-colors cursor-pointer ${
               isBookmarked
-                ? "text-amber-500 bg-amber-50 dark:bg-amber-950/40 hover:text-amber-600"
+                ? "text-blue-500 bg-blue-50 dark:bg-blue-950/40 hover:text-blue-600"
                 : "text-muted-foreground hover:text-foreground"
             }`}
             title={isBookmarked ? "스크랩 취소" : "스크랩 보관"}

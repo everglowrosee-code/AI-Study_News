@@ -220,6 +220,17 @@ export async function GET(request: NextRequest) {
   // 2. 키가 없는 경우 Mock 데이터 반환
   if (!clientId || !clientSecret) {
     const mockData = generateMockNews(query, display, sort)
+    // Supabase가 연결되어 있으면 Mock 데이터도 DB에 자동 저장 지원
+    saveSearchToSupabase(
+      {
+        keyword: query,
+        total: mockData.total,
+        start: mockData.start,
+        display: mockData.display,
+        lastBuildDate: mockData.lastBuildDate,
+      },
+      mockData.items
+    ).catch(() => {})
     return NextResponse.json(mockData)
   }
 
